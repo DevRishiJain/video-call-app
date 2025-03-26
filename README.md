@@ -1,66 +1,129 @@
-# WebRTC Video Call Application
+# Real-time Video Call Application
 
-A simple WebRTC-based video call application that allows users to make video calls through their web browser.
+A modern, room-based video calling application built with Node.js, Socket.IO, and WebRTC. This application allows users to create private rooms and conduct video calls with other users in real-time.
 
 ## Features
 
-- Real-time video and audio communication
-- Multiple camera support
-- Multiple microphone support
-- Device switching during calls
-- Simple and intuitive interface
+- 🎥 Real-time video and audio streaming
+- 🔒 Room-based private conversations
+- 🎯 Unique room IDs for secure connections
+- 📱 Responsive and modern UI
+- 🎛️ Camera and microphone device selection
+- 🔄 Automatic call start when users join the same room
+- 📊 Connection status indicators
+- 🚀 Easy deployment on Render.com
 
-## Deployment Instructions
+## Prerequisites
 
-### Deploy on Render.com (Recommended)
+- Node.js (v14 or higher)
+- npm (v6 or higher)
+- A modern web browser with WebRTC support
+- Camera and microphone access
 
-1. Create a Render.com account if you don't have one
-2. Click "New +" and select "Web Service"
-3. Connect your GitHub repository
-4. Configure the service:
-   - Name: video-call-app (or your preferred name)
-   - Environment: Node
-   - Build Command: `npm install`
-   - Start Command: `npm start`
-   - Plan: Free
+## Installation
 
-### Deploy on Heroku
+1. Clone the repository:
+```bash
+git clone https://github.com/DevRishiJain/video-call-app.git
+cd video-call-app
+```
 
-1. Create a Heroku account if you don't have one
-2. Install Heroku CLI
-3. Run the following commands:
-   ```bash
-   heroku create your-app-name
-   git push heroku main
-   ```
-
-### Deploy on DigitalOcean App Platform
-
-1. Create a DigitalOcean account if you don't have one
-2. Go to App Platform
-3. Click "Create App"
-4. Connect your GitHub repository
-5. Select the branch to deploy
-6. Configure the service:
-   - Environment: Node.js
-   - Build Command: `npm install`
-   - Run Command: `npm start`
-
-## Local Development
-
-1. Clone the repository
 2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Start the development server:
-   ```bash
-   npm run dev
-   ```
-4. Open http://localhost:3000 in your browser
+```bash
+npm install
+```
 
-## Requirements
+3. Start the server:
+```bash
+node server.js
+```
 
-- Node.js >= 14.0.0
-- Modern web browser with WebRTC support
-- Camera and microphone access 
+4. Open your browser and navigate to:
+```
+http://localhost:3000
+```
+
+## Usage
+
+### Creating a Room
+
+1. Open the application in your browser
+2. Click "Create New Room" to generate a random room ID
+3. Share the room ID with the person you want to call
+4. Wait for the other person to join
+
+### Joining a Room
+
+1. Open the application in your browser
+2. Enter the room ID received from the host
+3. Click "Join Room"
+4. The video call will start automatically when both users are in the same room
+
+### During the Call
+
+- Use the camera and microphone dropdowns to switch between available devices
+- The status indicator shows the current connection state
+- Click "Hang Up" to end the call
+- The room remains active until all users leave
+
+## Technical Stack
+
+- **Backend:**
+  - Node.js
+  - Express.js
+  - Socket.IO for real-time communication
+  - WebRTC for peer-to-peer video streaming
+
+- **Frontend:**
+  - HTML5
+  - CSS3 (with modern styling)
+  - JavaScript (ES6+)
+  - WebRTC API
+
+## Deployment
+
+The application is configured for easy deployment on Render.com:
+
+1. Create a new Web Service on Render
+2. Connect your GitHub repository
+3. Configure the following settings:
+   - Build Command: `npm install`
+   - Start Command: `node server.js`
+   - Environment Variables: None required
+
+## Security Considerations
+
+- Room IDs are randomly generated and case-sensitive
+- Each room is isolated from other rooms
+- WebRTC connections are encrypted
+- No data is stored on the server
+
+## Browser Support
+
+The application works best on modern browsers that support WebRTC:
+- Google Chrome (recommended)
+- Mozilla Firefox
+- Microsoft Edge
+- Safari (with WebRTC enabled)
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Acknowledgments
+
+- WebRTC for enabling peer-to-peer video communication
+- Socket.IO for real-time bidirectional communication
+- Render.com for hosting infrastructure
+
+## Support
+
+For support, please open an issue in the GitHub repository or contact the maintainers.
+
+---
+
+Made with ❤️ by DevRishiJain 
