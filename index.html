@@ -5,10 +5,18 @@
     <style>
         video { width: 45%; margin: 10px; }
         button { padding: 10px; }
+        .device-select { margin: 10px; }
+        select { padding: 5px; margin: 0 10px; }
     </style>
 </head>
 <body>
     <h1>Video Call App</h1>
+    <div class="device-select">
+        <label for="cameraSelect">Camera:</label>
+        <select id="cameraSelect"></select>
+        <label for="microphoneSelect">Microphone:</label>
+        <select id="microphoneSelect"></select>
+    </div>
     <video id="localVideo" autoplay playsinline muted></video>
     <video id="remoteVideo" autoplay playsinline></video>
     <br>
@@ -20,6 +28,10 @@
         const socket = io();
         let localStream;
         let peerConnection;
+        let availableDevices = {
+            video: [],
+            audio: []
+        };
 
         const config = {
             iceServers: [
@@ -34,27 +46,94 @@
 
         const localVideo = document.getElementById('localVideo');
         const remoteVideo = document.getElementById('remoteVideo');
+        const cameraSelect = document.getElementById('cameraSelect');
+        const microphoneSelect = document.getElementById('microphoneSelect');
+
+        // Function to get available devices
+        async function getDevices() {
+            try {
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                availableDevices.video = devices.filter(device => device.kind === 'videoinput');
+                availableDevices.audio = devices.filter(device => device.kind === 'audioinput');
+
+                // Populate camera select
+                cameraSelect.innerHTML = availableDevices.video
+                    .map(device => `<option value="${device.deviceId}">${device.label || `Camera ${cameraSelect.length + 1}`}</option>`)
+                    .join('');
+
+                // Populate microphone select
+                microphoneSelect.innerHTML = availableDevices.audio
+                    .map(device => `<option value="${device.deviceId}">${device.label || `Microphone ${microphoneSelect.length + 1}`}</option>`)
+                    .join('');
+            } catch (error) {
+                console.error('Error getting devices:', error);
+            }
+        }
+
+        // Function to handle device changes
+        async function handleDeviceChange() {
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+            }
+            await startCall();
+        }
+
+        // Add event listeners for device selection
+        cameraSelect.addEventListener('change', handleDeviceChange);
+        microphoneSelect.addEventListener('change', handleDeviceChange);
+
+        // Get initial devices
+        getDevices();
 
         async function startCall() {
-            localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-            localVideo.srcObject = localStream;
-
-            peerConnection = new RTCPeerConnection(config);
-            localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
-
-            peerConnection.onicecandidate = (event) => {
-                if (event.candidate) {
-                    socket.emit('ice-candidate', event.candidate);
+            const constraints = {
+                video: {
+                    deviceId: cameraSelect.value ? { exact: cameraSelect.value } : undefined,
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 }
+                },
+                audio: {
+                    deviceId: microphoneSelect.value ? { exact: microphoneSelect.value } : undefined
                 }
             };
 
-            peerConnection.ontrack = (event) => {
-                remoteVideo.srcObject = event.streams[0];
-            };
+            try {
+                localStream = await navigator.mediaDevices.getUserMedia(constraints);
+                localVideo.srcObject = localStream;
 
-            const offer = await peerConnection.createOffer();
-            await peerConnection.setLocalDescription(offer);
-            socket.emit('offer', offer);
+                if (peerConnection) {
+                    // Remove old tracks
+                    localStream.getTracks().forEach(track => {
+                        const senders = peerConnection.getSenders();
+                        const sender = senders.find(s => s.track.kind === track.kind);
+                        if (sender) {
+                            sender.replaceTrack(track);
+                        } else {
+                            peerConnection.addTrack(track, localStream);
+                        }
+                    });
+                } else {
+                    peerConnection = new RTCPeerConnection(config);
+                    localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+
+                    peerConnection.onicecandidate = (event) => {
+                        if (event.candidate) {
+                            socket.emit('ice-candidate', event.candidate);
+                        }
+                    };
+
+                    peerConnection.ontrack = (event) => {
+                        remoteVideo.srcObject = event.streams[0];
+                    };
+
+                    const offer = await peerConnection.createOffer();
+                    await peerConnection.setLocalDescription(offer);
+                    socket.emit('offer', offer);
+                }
+            } catch (error) {
+                console.error('Error accessing media devices:', error);
+                alert('Error accessing media devices. Please check your camera and microphone permissions.');
+            }
         }
 
         socket.on('offer', async (offer) => {
